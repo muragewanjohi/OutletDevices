@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name">Outlet Devices</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="select_outlet_name">Select Outlet Name</string>
+    <string name="select_and_proceed">Select and Proceed</string>
+    <string name="select_device">Select Device</string>
+    <string name="click_to_scan_qr_code">Click to Scan QR Code</string>
+    <string name="select_condition">Select Condition</string>
+    <string name="other_remarks">Other Remarks</string>
+    <string name="take_a_photo">Take A Photo</string>
+    <string name="take_picture">Take Picture</string>
+
+    <string-array name="outlet_array">
+        <item>Nairobi Bar</item>
+        <item>Kisumu Restaurant</item>
+        <item>Nanyuki Hotel</item>
+        <item>Jack Bar</item>
+        <item>Test Restaurant</item>
+        <item>Test Bar</item>
+        <item>Test Hotel</item>
+    </string-array>
+
+    <string-array name="device_array">
+        <item>Fridge</item>
+        <item>Grill</item>
+        <item>Freezer</item>
+        <item>Microwave</item>
+        <item>Cooker</item>
+        <item>Air Frier</item>
+    </string-array>
+
+    <string-array name="condition_array">
+        <item>Good</item>
+        <item>Bad</item>
+        <item>Ok</item>
+        <item>Other</item>
+    </string-array>
+</resources>
