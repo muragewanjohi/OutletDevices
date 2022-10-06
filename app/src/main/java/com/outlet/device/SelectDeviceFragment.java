@@ -1,5 +1,6 @@
 package com.outlet.device;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -32,6 +33,13 @@ public class SelectDeviceFragment extends Fragment {
                         .replace(((ViewGroup)(getView().getParent())).getId(), fragment)
                         .addToBackStack(null)
                         .commit();
+            }
+        });
+        binding.btnScanQrCode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), PictureBarcodeActivity.class);
+                startActivity(intent);
             }
         });
 

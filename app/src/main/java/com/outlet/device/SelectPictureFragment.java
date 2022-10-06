@@ -1,21 +1,37 @@
 package com.outlet.device;
 
+import static android.app.Activity.RESULT_OK;
 import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import com.outlet.device.camera.CameraPreview;
 import com.outlet.device.databinding.FragmentSelectDeviceBinding;
@@ -30,9 +46,15 @@ import java.util.Date;
 
 public class SelectPictureFragment extends Fragment {
 
-    private Camera mCamera;
-    private CameraPreview mPreview;
+    private Uri imageUri;
+    private static final int REQUEST_CAMERA_PERMISSION = 200;
+    private static final int CAMERA_REQUEST = 101;
+    private static final String TAG = "API123";
+    private static final String SAVED_INSTANCE_URI = "uri";
+    private static final String SAVED_INSTANCE_RESULT = "result";
+
     FragmentSelectPictureBinding binding;
+    int request_times = 0;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -46,18 +68,24 @@ public class SelectPictureFragment extends Fragment {
         binding = FragmentSelectPictureBinding.inflate(inflater, container, false);
         View view = binding.getRoot();
 
-        // Create an instance of Camera
-        mCamera = getCameraInstance();
+        if (savedInstanceState != null) {
+            if (imageUri != null) {
+                imageUri = Uri.parse(savedInstanceState.getString(SAVED_INSTANCE_URI));
+                binding.cameraPreview.setImageURI(imageUri);
+            }
+        }
 
-        // Create our Preview view and set it as the content of our activity.
-        mPreview = new CameraPreview(getContext(), mCamera);
-        binding.cameraPreview.addView(mPreview);
+        requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        requestPermissionLauncher.launch(Manifest.permission.CAMERA);
 
         binding.btnCapturePicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(checkCameraHardware(getContext())){
-                    mCamera.takePicture(null, null, mPicture);
+
+                binding.cameraPreview.setImageDrawable(null);
+
+                if(request_times == 2){
+                    takeBarcodePicture();
                 }
 
             }
@@ -77,82 +105,80 @@ public class SelectPictureFragment extends Fragment {
         return view;
     }
 
-    /** Check if this device has a camera */
-    private boolean checkCameraHardware(Context context) {
-        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
-            // this device has a camera
-            return true;
-        } else {
-            // no camera on this device
-            return false;
-        }
+    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            new ActivityResultCallback<Boolean>() {
+                @Override
+                public void onActivityResult(Boolean result) {
+                    if (result) {
+                       request_times += 1;
+                       Log.d("request_times", String.valueOf(request_times));
+                    } else {
+                        Toast.makeText(getContext(), "Permission Denied!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+    );
+
+
+    ActivityResultLauncher<Uri> startActivityForResult = registerForActivityResult(
+            new ActivityResultContracts.TakePicture(),
+            new ActivityResultCallback<Boolean>() {
+                @Override
+                public void onActivityResult(Boolean result) {
+                    launchMediaScanIntent();
+                    try {
+
+                        Bitmap bitmap = decodeBitmapUri(getActivity(), imageUri);
+                        if (bitmap != null) {
+                            binding.cameraPreview.setImageURI(imageUri);
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(getContext(), "Failed to load Image", Toast.LENGTH_SHORT)
+                                .show();
+                        Log.e(TAG, e.toString());
+                    }
+                }
+            });
+
+    private void takeBarcodePicture() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        File photo = new File(Environment.getExternalStorageDirectory(), "pic.jpg");
+        imageUri = FileProvider.getUriForFile(getActivity(),
+                BuildConfig.APPLICATION_ID + ".provider", photo);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        startActivityForResult.launch(imageUri);
     }
 
-    /** A safe way to get an instance of the Camera object. */
-    public static Camera getCameraInstance(){
-        Camera c = null;
-        try {
-            c = Camera.open(); // attempt to get a Camera instance
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if (imageUri != null) {
+            outState.putString(SAVED_INSTANCE_URI, imageUri.toString());
+           // binding.cameraPreview.setImageURI(imageUri);
         }
-        catch (Exception e){
-            // Camera is not available (in use or does not exist)
-        }
-        return c; // returns null if camera is unavailable
+        super.onSaveInstanceState(outState);
     }
 
-    private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
+    private void launchMediaScanIntent() {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        mediaScanIntent.setData(imageUri);
+        getActivity().sendBroadcast(mediaScanIntent);
+    }
 
-        @Override
-        public void onPictureTaken(byte[] data, Camera camera) {
+    private Bitmap decodeBitmapUri(Context ctx, Uri uri) throws FileNotFoundException {
+        int targetW = 600;
+        int targetH = 600;
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        bmOptions.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(ctx.getContentResolver().openInputStream(uri), null, bmOptions);
+        int photoW = bmOptions.outWidth;
+        int photoH = bmOptions.outHeight;
 
-            File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
-            if (pictureFile == null){
-                Log.d("TAG", "Error creating media file, check storage permissions");
-                return;
-            }
+        int scaleFactor = Math.min(photoW / targetW, photoH / targetH);
+        bmOptions.inJustDecodeBounds = false;
+        bmOptions.inSampleSize = scaleFactor;
 
-            try {
-                FileOutputStream fos = new FileOutputStream(pictureFile);
-                fos.write(data);
-                fos.close();
-            } catch (FileNotFoundException e) {
-                Log.d("TAG", "File not found: " + e.getMessage());
-            } catch (IOException e) {
-                Log.d("TAG", "Error accessing file: " + e.getMessage());
-            }
-        }
-    };
-    /** Create a File for saving an image or video */
-    private static File getOutputMediaFile(int type){
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
-
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "MyCameraApp");
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
-
-        // Create the storage directory if it does not exist
-        if (! mediaStorageDir.exists()){
-            if (! mediaStorageDir.mkdirs()){
-                Log.d("MyCameraApp", "failed to create directory");
-                return null;
-            }
-        }
-
-        // Create a media file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        File mediaFile;
-        if (type == MEDIA_TYPE_IMAGE){
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "IMG_"+ timeStamp + ".jpg");
-        } else if(type == MEDIA_TYPE_VIDEO) {
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "VID_"+ timeStamp + ".mp4");
-        } else {
-            return null;
-        }
-
-        return mediaFile;
+        return BitmapFactory.decodeStream(ctx.getContentResolver()
+                .openInputStream(uri), null, bmOptions);
     }
 }
