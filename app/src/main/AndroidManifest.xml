@@ -41,8 +41,6 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
-        <activity android:name=".ScannedBarcodeActivity" />
-        <activity android:name=".PictureBarcodeActivity" />
         <meta-data
             android:name="com.google.android.gms.vision.DEPENDENCIES"
             android:value="barcode" />

@@ -17,6 +17,14 @@
     <string name="scan_barcode">Scan Barcode</string>
     <string name="open_camera">OPEN CAMERA</string>
     <string name="send_email">SEND EMAIL</string>
+    <string name="barcode_text">Barcode Text</string>
+    <string name="reset">Reset</string>
+
+    <string name="image_href">ImageRef</string>
+    <string name="condition">Condition</string>
+    <string name="barcode">Barcode</string>
+    <string name="Other">Other</string>
+
 
     <string-array name="outlet_array">
         <item>Nairobi Bar</item>

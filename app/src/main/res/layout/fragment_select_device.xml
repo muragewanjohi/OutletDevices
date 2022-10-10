@@ -23,25 +23,23 @@
 
     <Spinner
         android:id="@+id/device_spinner"
-        android:layout_width="409dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:entries="@array/device_array"
         android:minHeight="48dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2" />
+        app:layout_constraintStart_toEndOf="@+id/textView2"
+        app:layout_constraintTop_toTopOf="@+id/textView2" />
 
     <Button
         android:id="@+id/btnScanQrCode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:background="@color/button_colour"
+        android:background="@drawable/ripple"
         android:text="@string/click_to_scan_qr_code"
-        android:textColor="#5D4037"
+        android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/device_spinner" />
@@ -52,7 +50,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:ems="10"
-        android:enabled="false"
+        android:focusable="false"
+        android:clickable="false"
         android:inputType="textPersonName"
         android:minHeight="48dp"
         android:text="QR Code"
@@ -75,24 +74,23 @@
 
     <Spinner
         android:id="@+id/condition_spinner"
-        android:layout_width="409dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:entries="@array/condition_array"
         android:minHeight="48dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView3" />
+        app:layout_constraintStart_toEndOf="@+id/textView3"
+        app:layout_constraintTop_toTopOf="@+id/textView3" />
 
     <EditText
         android:id="@+id/otherRemarks"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="56dp"
+        android:layout_marginTop="52dp"
         android:hint="@string/other_remarks"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.354"
-        app:layout_constraintStart_toStartOf="parent"
+        android:minHeight="48dp"
+        app:layout_constraintEnd_toEndOf="@+id/condition_spinner"
+        app:layout_constraintStart_toStartOf="@+id/qrCode"
         app:layout_constraintTop_toBottomOf="@+id/condition_spinner" />
 
     <Button
@@ -101,6 +99,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="56dp"
         android:text="@string/take_a_photo"
+        android:background="@drawable/ripple"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/otherRemarks" />
