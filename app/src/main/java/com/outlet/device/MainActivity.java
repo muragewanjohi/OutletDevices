@@ -3,6 +3,7 @@ package com.outlet.device;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -29,12 +30,15 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "AssetLogs";
     APIInterface apiInterface;
     String outlet_id;
+    private MainViewModel mViewModel;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mViewModel = new ViewModelProvider(this).get(MainViewModel.class);
 
         apiInterface = APIClient.getClient().create(APIInterface.class);
 
@@ -63,12 +67,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<Asset>> call, Response<List<Asset>> response) {
                 if(response.isSuccessful()) {
-                    List<Asset> changesList = response.body();
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        changesList.forEach(asset -> Log.d(TAG,asset.getAssetId()));
-                    }
+                    List<Asset> assetList = response.body();
 
-                    Fragment fragment = new SelectOutletFragment();
+                    assert assetList != null;
+                    for (Asset asset: assetList){
+                        mViewModel.insertAsset(asset);
+
+                        Log.d(TAG,asset.getAssetId());
+                    }
+                    Fragment fragment = new SelectDeviceFragment();
                     FragmentManager fragmentManager = getSupportFragmentManager();
                     fragmentManager.beginTransaction()
                             .replace(R.id.main_activity, fragment).commit();

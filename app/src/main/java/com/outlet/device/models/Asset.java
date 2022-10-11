@@ -1,19 +1,34 @@
 package com.outlet.device.models;
 
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
 import java.io.Serializable;
 import java.lang.String;
 
+@Entity
 public class Asset implements Serializable {
+
+  @PrimaryKey(autoGenerate = true)
+  public int uid;
+
+  @ColumnInfo(name = "outletName")
   private String outletName;
 
+  @ColumnInfo(name = "assetId")
   private String assetId;
 
+  @ColumnInfo(name = "outletId")
   private String outletId;
 
+  @ColumnInfo(name = "typeName")
   private String typeName;
 
+  @ColumnInfo(name = "assetName")
   private String assetName;
 
+  @ColumnInfo(name = "typeId")
   private String typeId;
 
   public String getOutletName() {
