@@ -24,6 +24,19 @@
     <string name="condition">Condition</string>
     <string name="barcode">Barcode</string>
     <string name="Other">Other</string>
+    <string name="outlet_id">outlet_id</string>
+    <string name="device_id">device_id</string>
+    <string name="datetime">datetime</string>
+    <string name="Image">Image</string>
+    <string name="device_name">device name</string>
+    <string name="place_holder">Place Holder</string>
+    <string name="upload_to_server">Upload to Server</string>
+    <string name="continue_filling">Continue Filling</string>
+    <string name="asset_id">asset_id</string>
+    <string name="barCode">barCode</string>
+    <string name="qrCode">qrCode</string>
+    <string name="stateId">stateId</string>
+    <string name="asset_ids">asset_ids</string>
 
 
     <string-array name="outlet_array">

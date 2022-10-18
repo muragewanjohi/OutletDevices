@@ -4,7 +4,6 @@ import android.app.Application;
 import android.os.AsyncTask;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 
 import com.outlet.device.data.AppDatabase;
 import com.outlet.device.models.Asset;
@@ -28,6 +27,10 @@ public class AssetRepository {
 
     public void update(Asset model) {
         new UpdateAssetAsyncTask(assetDao).execute(model);
+    }
+
+    public void findByAssetName(Asset model) {
+        new FindByAssetNameAssyncTask(assetDao).execute(model);
     }
 
     public void delete(Asset asset) {
@@ -56,7 +59,6 @@ public class AssetRepository {
         }
     }
 
-
     private static class UpdateAssetAsyncTask extends AsyncTask<Asset, Void, Void> {
         private AssetDao assetDao;
 
@@ -71,6 +73,20 @@ public class AssetRepository {
         }
     }
 
+    private static class FindByAssetNameAssyncTask extends AsyncTask<Asset, Void, Void> {
+        private AssetDao assetDao;
+
+        private FindByAssetNameAssyncTask(AssetDao assetDao) {
+            this.assetDao = assetDao;
+        }
+
+        @Override
+        protected Void doInBackground(Asset... models) {
+            assetDao.
+                    findByAssetName(models[0].getAssetName());
+            return null;
+        }
+    }
 
     private static class DeleteAssetAsyncTask extends AsyncTask<Asset, Void, Void> {
         private AssetDao assetDao;

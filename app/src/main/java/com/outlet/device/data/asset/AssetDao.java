@@ -19,6 +19,9 @@ public interface AssetDao {
     @Query("SELECT * FROM asset WHERE assetId LIKE :id LIMIT 1")
     Asset findByAssetId(int id);
 
+    @Query("SELECT * FROM asset WHERE assetName LIKE :assetName LIMIT 1")
+    Asset findByAssetName(String assetName);
+
     @Insert
     void insert(Asset asset);
 

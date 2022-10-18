@@ -30,6 +30,7 @@ public class SelectDeviceFragment extends Fragment {
     private SelectFragmentViewModel viewModel;
 
     List<String> devices = new ArrayList<String>();
+    List<String> devices_id = new ArrayList<String>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -43,6 +44,9 @@ public class SelectDeviceFragment extends Fragment {
         binding = FragmentSelectDeviceBinding.inflate(inflater, container, false);
         View view = binding.getRoot();
 
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+
         viewModel = new ViewModelProvider(getActivity()).get(SelectFragmentViewModel.class);
 
         viewModel.getAllAssets().observe(getActivity(), new Observer<List<Asset>>() {
@@ -50,6 +54,7 @@ public class SelectDeviceFragment extends Fragment {
             public void onChanged(List<Asset> assets) {
                 for (Asset asset: assets){
                     devices.add(asset.getTypeName());
+                    devices_id.add(asset.getAssetId());
                 }
             }
         });
@@ -63,6 +68,12 @@ public class SelectDeviceFragment extends Fragment {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 // On selecting a spinner item
                 String item = parent.getItemAtPosition(position).toString();
+                String asset_id = devices_id.get(position);
+
+
+                editor.putString(getString(R.string.asset_id), asset_id);
+                editor.putString(getString(R.string.device_name), item);
+                editor.apply();
 
                 // Showing selected spinner item
                 Toast.makeText(parent.getContext(), "Selected: " + item, Toast.LENGTH_LONG).show();
@@ -74,17 +85,44 @@ public class SelectDeviceFragment extends Fragment {
             }
         });
 
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        binding.conditionSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                // On selecting a spinner item
+                String item = parent.getItemAtPosition(position).toString();
+
+                editor.putString(getString(R.string.condition), item);
+                editor.putString(getString(R.string.stateId), String.valueOf(position));
+                editor.apply();
+
+                // Showing selected spinner item
+                Toast.makeText(parent.getContext(), "Selected: " + item, Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
         String barCodeValue = sharedPref.getString(getResources().getString(R.string.barcode), null);
 
         if(barCodeValue != null){
             binding.qrCode.setText(barCodeValue);
+            editor.putString(getString(R.string.barCode), binding.qrCode.getText().toString());
+            editor.putString(getString(R.string.qrCode), binding.qrCode.getText().toString());
+            editor.apply();
             Log.d("barCode", barCodeValue);
         }
 
         binding.btnTakePhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                editor.putString(getString(R.string.barcode), "");
+                editor.putString(getString(R.string.other_remarks), binding.otherRemarks.getText().toString());
+                editor.apply();
+
                 Fragment fragment = new SelectPictureFragment();
                 getActivity().getSupportFragmentManager().beginTransaction()
                         .replace(((ViewGroup)(getView().getParent())).getId(), fragment)

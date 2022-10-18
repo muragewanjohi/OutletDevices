@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:id="@+id/select_picture_fragment"
     android:background="?android:attr/colorBackground"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    >
+    tools:context=".SelectPictureFragment">
     <ImageView
         android:id="@+id/camera_preview"
         android:layout_width="fill_parent"
