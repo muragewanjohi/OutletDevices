@@ -51,6 +51,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Call;
@@ -152,8 +153,6 @@ public class ViewDevicesFragment extends Fragment implements LocationListener {
         ActivityCompat.requestPermissions( getActivity(),
                 new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
 
-
-
         Upload upload = new Upload();
         upload.setUserId(userId);
         upload.setAssetId(assetId);
@@ -216,22 +215,26 @@ public class ViewDevicesFragment extends Fragment implements LocationListener {
 
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
 
-        String userId = "1";
-        String outletId = sharedPref.getString(getResources().getString(R.string.outlet_id), "8");
-        String assetId = sharedPref.getString(getResources().getString(R.string.asset_id), "1");
-        String remark = sharedPref.getString(getResources().getString(R.string.other_remarks), "0");
-        String barCode = sharedPref.getString(getResources().getString(R.string.barCode), "0");
-        String qrCode = sharedPref.getString(getResources().getString(R.string.qrCode), "1");
-        String image = sharedPref.getString(getResources().getString(R.string.Image), "0");
-        String stateId = sharedPref.getString(getResources().getString(R.string.stateId), "0");
+        String userIdString = "1";
+        String outletIdString = sharedPref.getString(getResources().getString(R.string.outlet_id), "8");
+        String assetIdString = sharedPref.getString(getResources().getString(R.string.asset_id), "1");
+        String remarkString = sharedPref.getString(getResources().getString(R.string.other_remarks), "0");
+        String barCodeString = sharedPref.getString(getResources().getString(R.string.barCode), "041532");
+        String qrCodeString = sharedPref.getString(getResources().getString(R.string.qrCode), "041532");
+        String imageString = sharedPref.getString(getResources().getString(R.string.Image), "0");
+        String latitudeString = latitude;
+        String longitudeString = longitude;
+        String datetimeString = datetime;
+        Log.d("Upload_sharedPrefImage", "onRequest: " + imageString);
+        String stateIdString = sharedPref.getString(getResources().getString(R.string.stateId), "0");
 
-        File featured_image = new File(image);
+        File featured_image = new File(imageString);
 
-        Bitmap bmp = BitmapFactory.decodeFile(featured_image.getAbsolutePath());
+      /*  Bitmap bmp = BitmapFactory.decodeFile(featured_image.getAbsolutePath());
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.JPEG, 30, bos);
+        bmp.compress(Bitmap.CompressFormat.JPEG, 30, bos);*/
 
-        MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+       /* MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
 
         builder.addFormDataPart(userId, userId)
                 .addFormDataPart(outletId, outletId)
@@ -242,15 +245,41 @@ public class ViewDevicesFragment extends Fragment implements LocationListener {
                 .addFormDataPart(latitude,latitude)
                 .addFormDataPart(longitude,longitude)
                 .addFormDataPart(datetime,datetime)
-                .addFormDataPart(stateId, stateId);
+                .addFormDataPart(stateId, stateId);*/
+
+        RequestBody fileBody = RequestBody.create(MediaType.parse("image/*"), featured_image);
+
+        RequestBody userId = RequestBody.create(MediaType.parse("text/plain"),userIdString);
+        RequestBody outletId = RequestBody.create(MediaType.parse("text/plain"),outletIdString);
+        RequestBody assetId = RequestBody.create(MediaType.parse("text/plain"),assetIdString);
+        RequestBody remark = RequestBody.create(MediaType.parse("text/plain"),remarkString);
+        RequestBody barCode = RequestBody.create(MediaType.parse("text/plain"),barCodeString);
+        RequestBody qrCode = RequestBody.create(MediaType.parse("text/plain"),qrCodeString);
+        RequestBody latitude = RequestBody.create(MediaType.parse("text/plain"),latitudeString);
+        RequestBody longitude = RequestBody.create(MediaType.parse("text/plain"),longitudeString);
+        RequestBody datetime = RequestBody.create(MediaType.parse("text/plain"),datetimeString);
+        RequestBody stateId = RequestBody.create(MediaType.parse("text/plain"),stateIdString);
 
        // builder.addFormDataPart("Image", featured_image.getName(), RequestBody.create(MultipartBody.FORM, bos.toByteArray()));
-        builder.addFormDataPart("Image", featured_image.getName(), RequestBody.create(MultipartBody.FORM, featured_image));
+       // builder.addFormDataPart("Image", featured_image.getName(), requestFile);
 
-        RequestBody requestBody = builder.build();
+        Log.d("Upload_userId", "onRequest: " + userIdString);
+        Log.d("Upload_outletId", "onRequest: " + outletIdString);
+        Log.d("Upload_assetId", "onRequest: " + assetIdString);
+        Log.d("Upload_remark", "onRequest: " + remarkString);
+        Log.d("Upload_barCode", "onRequest: " + barCodeString);
+        Log.d("Upload_qrCode", "onRequest: " + qrCodeString);
+        Log.d("Upload_latitude", "onRequest: " + latitudeString);
+        Log.d("Upload_longitude", "onRequest: " + longitudeString);
+        Log.d("Upload_datetime", "onRequest: " + datetimeString);
+        Log.d("Upload_stateId", "onRequest: " + stateIdString);
+        Log.d("Upload_Image", "onRequest: " + featured_image.getName());
+
+       // RequestBody requestBody = builder.build();
 
         APIInterface  apiInterface = APIClient.getClient().create(APIInterface.class);
-        Call<UploadResponse> call = apiInterface.uploadAssets(requestBody);
+      //  Call<UploadResponse> call = apiInterface.uploadAssets(requestBody);
+        Call<UploadResponse> call = apiInterface.uploadAssets(fileBody, userId,outletId,assetId,latitude,longitude,datetime,qrCode,stateId,remark,barCode);
         call.enqueue(new Callback<UploadResponse>() {
             @Override
             public void onResponse(Call<UploadResponse> call, Response<UploadResponse> response) {

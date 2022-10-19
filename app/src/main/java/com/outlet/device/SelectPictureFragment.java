@@ -68,12 +68,12 @@ public class SelectPictureFragment extends Fragment {
                 imageUri = Uri.parse(savedInstanceState.getString(SAVED_INSTANCE_URI));
                 binding.cameraPreview.setImageURI(imageUri);
 
-                String Image = getImageFilePath(getContext(),imageUri);
+                String Image = getImageFilePath(getContext(), imageUri);
 
                 editor.putString(getString(R.string.Image), String.valueOf(imageUri));
                 editor.apply();
 
-                Log.d("Image_path",Image);
+                Log.d("Image_path", Image);
             }
         }
 
@@ -86,7 +86,7 @@ public class SelectPictureFragment extends Fragment {
 
                 binding.cameraPreview.setImageDrawable(null);
 
-                if(request_times == 2){
+                if (request_times == 2) {
                     takeBarcodePicture();
                 }
 
@@ -99,7 +99,7 @@ public class SelectPictureFragment extends Fragment {
 
                 Fragment fragment = new ViewDevicesFragment();
                 getActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(((ViewGroup)(getView().getParent())).getId(), fragment)
+                        .replace(((ViewGroup) (getView().getParent())).getId(), fragment)
                         .addToBackStack(null)
                         .commit();
             }
@@ -114,8 +114,8 @@ public class SelectPictureFragment extends Fragment {
                 @Override
                 public void onActivityResult(Boolean result) {
                     if (result) {
-                       request_times += 1;
-                       Log.d("request_times", String.valueOf(request_times));
+                        request_times += 1;
+                        Log.d("request_times", String.valueOf(request_times));
                     } else {
                         Toast.makeText(getContext(), "Permission Denied!", Toast.LENGTH_SHORT).show();
                     }
@@ -146,33 +146,36 @@ public class SelectPictureFragment extends Fragment {
 
     private void takeBarcodePicture() {
 
-            long millis = new Date().getTime();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-           // String datetime  = dateFormat.format(new Date());
-            String datetime  = String.valueOf(millis);
+        long millis = new Date().getTime();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        // String datetime  = dateFormat.format(new Date());
+        String datetime = String.valueOf(millis);
 
-            String Image = device_id + "_" + outlet_id + "_" + datetime +".jpg";
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
 
-                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            File photo = new File(Environment.getExternalStorageDirectory(), Image);
-            imageUri = FileProvider.getUriForFile(getActivity(),
-                    BuildConfig.APPLICATION_ID + ".provider", photo);
+        String assetId = sharedPref.getString(getResources().getString(R.string.asset_id), "1");
 
-            Log.d("Image_photo", String.valueOf(imageUri.getPath()                                                                                                                                                                                                                                                                                                                                                                  ));
-            Log.d("Image_file", photo.getAbsolutePath());
+        String Image = assetId + "_" + outlet_id + "_" + datetime + ".jpg";
 
-          //  Image = RealPathUtil.getRealPath(getContext(),imageUri);
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        File photo = new File(Environment.getExternalStorageDirectory(), Image);
+        imageUri = FileProvider.getUriForFile(getActivity(),
+                BuildConfig.APPLICATION_ID + ".provider", photo);
 
-            SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPref.edit();
+        Log.d("Image_photo", String.valueOf(imageUri.getPath()));
+        Log.d("Image_file", photo.getAbsolutePath());
 
-            editor.putString(getString(R.string.Image), photo.getAbsolutePath());
-            editor.apply();
+        //  Image = RealPathUtil.getRealPath(getContext(),imageUri);
 
-            Log.d("Image_path",Image);
 
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-            startActivityForResult.launch(imageUri);
+        editor.putString(getString(R.string.Image), photo.getAbsolutePath());
+        editor.apply();
+
+        Log.d("Image_path", Image);
+
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        startActivityForResult.launch(imageUri);
         /*} else{
 
             Toast.makeText(getContext(),"Outlet and Device ID missing", Toast.LENGTH_SHORT);
@@ -192,7 +195,7 @@ public class SelectPictureFragment extends Fragment {
         if (imageUri != null) {
 
             outState.putString(SAVED_INSTANCE_URI, imageUri.toString());
-           // binding.cameraPreview.setImageURI(imageUri);
+            // binding.cameraPreview.setImageURI(imageUri);
         }
         super.onSaveInstanceState(outState);
     }

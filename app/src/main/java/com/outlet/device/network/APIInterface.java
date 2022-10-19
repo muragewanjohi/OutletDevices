@@ -16,6 +16,7 @@ import retrofit2.http.Body;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
@@ -35,9 +36,23 @@ public interface APIInterface {
     @GET("index.php?/api/assetstates")
     Call <AssetStates>getAssetsStates();
 
-
+    @Multipart
     @POST("index.php/api/postAssetState")
-    Call<UploadResponse> uploadAssets(@Body RequestBody upload);
+    Call<UploadResponse> uploadAssets(
+            @Part("Image") RequestBody file,
+            @Part("userId") RequestBody userId,
+            @Part("outletId") RequestBody outletId,
+            @Part("assetId") RequestBody assetId,
+            @Part("latitude") RequestBody latitude,
+            @Part("longitude") RequestBody longitude,
+            @Part("datetime") RequestBody datetime,
+            @Part("qrCode") RequestBody qrCode,
+            @Part("stateId") RequestBody stateId,
+            @Part("remark") RequestBody remark,
+            @Part("barCode") RequestBody barCode);
+
+    /*@POST("index.php/api/postAssetState")
+    Call<UploadResponse> uploadAssets(@Header("Content-Type") String contentType, @Body MultipartBody upload);*/
 
    /* @POST("/api/users")
     Call<User> createUser(@Body User user);
