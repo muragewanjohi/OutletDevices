@@ -25,6 +25,7 @@
     <string name="barcode">Barcode</string>
     <string name="Other">Other</string>
     <string name="outlet_id">outlet_id</string>
+    <string name="fetched_outlet_id">fetched_outlet_id</string>
     <string name="device_id">device_id</string>
     <string name="datetime">datetime</string>
     <string name="Image">Image</string>

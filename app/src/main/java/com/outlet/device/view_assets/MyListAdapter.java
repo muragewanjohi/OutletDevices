@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.outlet.device.R;
 
+import java.io.File;
+
 public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder> {
 
     private ListData[] listdata;
@@ -41,7 +43,8 @@ public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder
         holder.tvDeviceId.setText(listdata[position].getDevice_id());
         //holder.imageView.setImageResource(listdata[position].getImgId());
         Log.d("Image_getImgId",listdata[position].getImgId());
-        Bitmap myBitmap = BitmapFactory.decodeFile(listdata[position].getImgId());
+        File imgFile = new  File(listdata[position].getImgId());
+        Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
         holder.imageView.setImageBitmap(myBitmap);
         holder.constraintLayout.setOnClickListener(new View.OnClickListener() {
             @Override

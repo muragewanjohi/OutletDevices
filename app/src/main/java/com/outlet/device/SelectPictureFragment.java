@@ -24,7 +24,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
-import com.outlet.device.data.RealPathUtil;
 import com.outlet.device.databinding.FragmentSelectPictureBinding;
 
 import java.io.File;

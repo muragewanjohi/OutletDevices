@@ -44,6 +44,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        Boolean fetched = sharedPref.getBoolean(getString(R.string.fetched_outlet_id),false);
+
+        if(fetched){
+
+            Fragment fragment = new SelectDeviceFragment();
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.main_activity, fragment).commit();
+        } else{
+
         mViewModel = new ViewModelProvider(this).get(MainViewModel.class);
 
         apiInterface = APIClient.getClient().create(APIInterface.class);
@@ -68,8 +79,6 @@ public class MainActivity extends AppCompatActivity {
             outlet_id = "8";
         }
 
-
-        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(getString(R.string.outlet_id), outlet_id);
         editor.apply();
@@ -93,6 +102,9 @@ public class MainActivity extends AppCompatActivity {
 
                     saveArrayList(assetIds,getString(R.string.asset_ids));
 
+                    editor.putBoolean(getString(R.string.fetched_outlet_id),true);
+                    editor.apply();
+
                     Fragment fragment = new SelectDeviceFragment();
                     FragmentManager fragmentManager = getSupportFragmentManager();
                     fragmentManager.beginTransaction()
@@ -114,6 +126,8 @@ public class MainActivity extends AppCompatActivity {
                 progress.cancel();
             }
         });
+
+        }
 
     }
 

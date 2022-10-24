@@ -45,6 +45,10 @@ public class UploadRepository {
         return allUploads;
     }
 
+    public LiveData<List<Upload>> getNotSyncedUploads() {
+        return uploadDao.getNotSynced();
+    }
+
     private static class InsertUploadAsyncTask extends AsyncTask<Upload, Void, Void> {
         private UploadDao uploadDao;
 

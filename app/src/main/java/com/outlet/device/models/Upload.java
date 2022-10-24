@@ -45,7 +45,19 @@ public class Upload implements Serializable {
 
     @ColumnInfo(name = "remark")
     private String remark;
-/*
+
+    @ColumnInfo(name = "synced", defaultValue = "false")
+    private Boolean synced = false ;
+
+    public Boolean getSynced() {
+        return synced;
+    }
+
+    public void setSynced(Boolean synced) {
+        this.synced = synced;
+    }
+
+    /*
     public Upload(String userId, String assetId, String outletId, String latitude, String longitude, String datetime, String image, String barCode, String qrCode, String stateId, String remark) {
         this.userId = userId;
         this.assetId = assetId;
