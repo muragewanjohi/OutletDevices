@@ -123,7 +123,8 @@ public class ScanBarCodeFragment  extends Fragment {
                             barcodeData = barcodes.valueAt(0).displayValue;
                             binding.barcodeText.setText(barcodeData);
 
-                            SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+                            SharedPreferences sharedPref = getActivity().getSharedPreferences(
+                                    getString(R.string.app_preferences), Context.MODE_PRIVATE);
                             SharedPreferences.Editor editor = sharedPref.edit();
                             editor.putString(getString(R.string.barcode), barcodeData);
                             editor.apply();

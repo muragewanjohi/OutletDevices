@@ -2,6 +2,7 @@ package com.outlet.device.data.upload;
 
 import android.app.Application;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 
@@ -29,6 +30,7 @@ public class UploadRepository {
     }
 
     public void update(Upload model) {
+        Log.d("UploadUpdate ", "Upload Sync: " + model.getSynced().toString());
         new UploadRepository.UpdateUploadAsyncTask(uploadDao).execute(model);
     }
 
@@ -45,8 +47,13 @@ public class UploadRepository {
         return allUploads;
     }
 
-    public LiveData<List<Upload>> getNotSyncedUploads() {
+   /* public List<Upload> getNotSyncedUploads() {
         return uploadDao.getNotSynced();
+    }*/
+
+    public List<Upload> getItemsToSync() {
+        Log.d("uploadToSync", "Get items to Sync");
+        return uploadDao.getItemsToSync();
     }
 
     private static class InsertUploadAsyncTask extends AsyncTask<Upload, Void, Void> {
@@ -63,7 +70,7 @@ public class UploadRepository {
         }
     }
 
-    private static class UpdateUploadAsyncTask extends AsyncTask<Upload, Void, Void> {
+    /*private static class UpdateUploadAsyncTask extends AsyncTask<Upload, Void, Void> {
         private UploadDao uploadDao;
 
         private UpdateUploadAsyncTask(UploadDao uploadDao) {
@@ -73,6 +80,20 @@ public class UploadRepository {
         @Override
         protected Void doInBackground(Upload... models) {
             uploadDao.update(models[0]);
+            return null;
+        }
+    }*/
+
+    private static class UpdateUploadAsyncTask extends AsyncTask<Upload, Void, Void> {
+        private UploadDao uploadDao;
+
+        private UpdateUploadAsyncTask(UploadDao uploadDao) {
+            this.uploadDao = uploadDao;
+        }
+
+        @Override
+        protected Void doInBackground(Upload... models) {
+            uploadDao.updateUploadByTime(models[0].getDatetime());
             return null;
         }
     }

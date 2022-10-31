@@ -44,7 +44,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = this.getSharedPreferences(
+                getString(R.string.app_preferences), Context.MODE_PRIVATE);
         Boolean fetched = sharedPref.getBoolean(getString(R.string.fetched_outlet_id),false);
 
         if(fetched){

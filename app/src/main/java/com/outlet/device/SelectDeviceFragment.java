@@ -1,7 +1,6 @@
 package com.outlet.device;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
@@ -17,9 +16,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
-import com.outlet.device.data.asset.AssetRepository;
+import com.outlet.device.camera.SelectPictureFragment;
 import com.outlet.device.databinding.FragmentSelectDeviceBinding;
-import com.outlet.device.databinding.FragmentSelectOutletBinding;
 import com.outlet.device.models.Asset;
 
 import java.util.ArrayList;
@@ -31,6 +29,7 @@ public class SelectDeviceFragment extends Fragment {
 
     List<String> devices = new ArrayList<String>();
     List<String> devices_id = new ArrayList<String>();
+    SharedPreferences sharedPref;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -44,7 +43,8 @@ public class SelectDeviceFragment extends Fragment {
         binding = FragmentSelectDeviceBinding.inflate(inflater, container, false);
         View view = binding.getRoot();
 
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        sharedPref = getActivity().getSharedPreferences(
+                getString(R.string.app_preferences), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
 
         viewModel = new ViewModelProvider(getActivity()).get(SelectFragmentViewModel.class);
@@ -69,7 +69,6 @@ public class SelectDeviceFragment extends Fragment {
                 // On selecting a spinner item
                 String item = parent.getItemAtPosition(position).toString();
                 String asset_id = devices_id.get(position);
-
 
                 editor.putString(getString(R.string.asset_id), asset_id);
                 editor.putString(getString(R.string.device_name), item);
@@ -106,28 +105,32 @@ public class SelectDeviceFragment extends Fragment {
         });
 
         String barCodeValue = sharedPref.getString(getResources().getString(R.string.barcode), null);
-
-        if(barCodeValue != null){
-            binding.qrCode.setText(barCodeValue);
-            editor.putString(getString(R.string.barCode), binding.qrCode.getText().toString());
-            editor.putString(getString(R.string.qrCode), binding.qrCode.getText().toString());
-            editor.apply();
-            Log.d("barCode", barCodeValue);
-        }
+        binding.qrCode.setText(barCodeValue);
 
         binding.btnTakePhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                editor.putString(getString(R.string.barcode), "");
-                editor.putString(getString(R.string.other_remarks), binding.otherRemarks.getText().toString());
-                editor.apply();
+                if(barCodeValue != null){
 
-                Fragment fragment = new SelectPictureFragment();
-                getActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(((ViewGroup)(getView().getParent())).getId(), fragment)
-                        .addToBackStack(null)
-                        .commit();
+                    editor.putString(getString(R.string.barCode), binding.qrCode.getText().toString());
+                    editor.putString(getString(R.string.qrCode), binding.qrCode.getText().toString());
+                    editor.putString(getString(R.string.other_remarks), binding.otherRemarks.getText().toString());
+                    editor.apply();
+                    Log.d("barCode", barCodeValue);
+
+                    Fragment fragment = new SelectPictureFragment();
+                    getActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(((ViewGroup)(getView().getParent())).getId(), fragment)
+                            .addToBackStack(null)
+                            .commit();
+
+                } else{
+
+                    Toast.makeText(getContext(), "Scan QR / Barcode first ", Toast.LENGTH_LONG).show();
+                }
+
+
             }
         });
         binding.btnScanQrCode.setOnClickListener(new View.OnClickListener() {

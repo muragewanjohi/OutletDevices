@@ -21,14 +21,20 @@ public interface UploadDao {
     @Query("SELECT * FROM upload WHERE assetId LIKE :id LIMIT 1")
     Upload findByAssetId(String id);
 
+/*    @Query("SELECT * FROM upload WHERE synced = 0")
+    List<Upload> getNotSynced();*/
+
     @Query("SELECT * FROM upload WHERE synced = 0")
-    LiveData<List<Upload>> getNotSynced();
+    List<Upload>getItemsToSync();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(Upload upload);
 
     @Update
     void update(Upload upload);
+
+    @Query("UPDATE Upload SET synced = 1 WHERE datetime =:time")
+    void updateUploadByTime(String time);
 
     @Delete
     void delete(Upload upload);

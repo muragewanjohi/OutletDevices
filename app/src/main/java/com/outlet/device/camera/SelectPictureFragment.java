@@ -1,11 +1,16 @@
-package com.outlet.device;
+package com.outlet.device.camera;
 
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -21,9 +26,15 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.outlet.device.BuildConfig;
+import com.outlet.device.R;
+import com.outlet.device.view_assets.ViewDevicesFragment;
 import com.outlet.device.databinding.FragmentSelectPictureBinding;
 
 import java.io.File;
@@ -31,18 +42,24 @@ import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class SelectPictureFragment extends Fragment {
+public class SelectPictureFragment extends Fragment implements LocationListener {
 
+    SelectPictureViewModel selectPictureViewModel;
     private Uri imageUri;
-    private static final int REQUEST_CAMERA_PERMISSION = 200;
-    private static final int CAMERA_REQUEST = 101;
     private static final String TAG = "API123";
     private static final String SAVED_INSTANCE_URI = "uri";
-    private static final String SAVED_INSTANCE_RESULT = "result";
 
     FragmentSelectPictureBinding binding;
     int request_times = 0;
     String device_id, outlet_id;
+
+    private static final int REQUEST_LOCATION = 1;
+    String latitude, longitude, datetime;
+
+    public LocationManager locationManager;
+    public Criteria criteria;
+    public String bestProvider;
+    SharedPreferences sharedPref;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -56,8 +73,13 @@ public class SelectPictureFragment extends Fragment {
         binding = FragmentSelectPictureBinding.inflate(inflater, container, false);
         View view = binding.getRoot();
 
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        selectPictureViewModel = new ViewModelProvider(this).get(SelectPictureViewModel.class);
+
+        sharedPref = getActivity().getSharedPreferences(
+                getString(R.string.app_preferences), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
+
+        getLocation();
 
         device_id = sharedPref.getString(getResources().getString(R.string.device_id), null);
         outlet_id = sharedPref.getString(getResources().getString(R.string.outlet_id), null);
@@ -78,6 +100,10 @@ public class SelectPictureFragment extends Fragment {
 
         requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         requestPermissionLauncher.launch(Manifest.permission.CAMERA);
+        //requestPermissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION);
+        //requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+
+        //Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
 
         binding.btnCapturePicture.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -95,6 +121,8 @@ public class SelectPictureFragment extends Fragment {
         binding.btnProceed.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                selectPictureViewModel.insertUpload();
 
                 Fragment fragment = new ViewDevicesFragment();
                 getActivity().getSupportFragmentManager().beginTransaction()
@@ -150,7 +178,7 @@ public class SelectPictureFragment extends Fragment {
         // String datetime  = dateFormat.format(new Date());
         String datetime = String.valueOf(millis);
 
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+       // SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
 
         String assetId = sharedPref.getString(getResources().getString(R.string.asset_id), "1");
@@ -223,7 +251,6 @@ public class SelectPictureFragment extends Fragment {
                 .openInputStream(uri), null, bmOptions);
     }
 
-
     public static String getImageFilePath(final Context context, final Uri uri) {
         final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
 
@@ -255,6 +282,53 @@ public class SelectPictureFragment extends Fragment {
             }
         }
         return null;
+    }
+
+    private void getLocation() {
+        if (ActivityCompat.checkSelfPermission(
+                getContext(),Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+        } else {
+            locationManager = (LocationManager)  getActivity().getSystemService(Context.LOCATION_SERVICE);
+            criteria = new Criteria();
+            bestProvider = String.valueOf(locationManager.getBestProvider(criteria, true)).toString();
+
+            //You can still do this if you like, you might get lucky:
+            Location location = locationManager.getLastKnownLocation(bestProvider);
+            if (location != null) {
+                Log.e("TAG", "GPS is on");
+               // SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                latitude = String.valueOf(location.getLatitude());
+                editor.putString(getResources().getString(R.string.latitude), latitude);
+                longitude = String.valueOf(location.getLongitude());
+                editor.putString(getResources().getString(R.string.longitude), longitude);
+                editor.apply();
+
+            }
+            else{
+                //This is what you need:
+                locationManager.requestLocationUpdates(bestProvider, 1000, 0, this);
+            }
+        }
+    }
+
+    @Override
+    public void onLocationChanged(@NonNull Location location) {
+        //remove location callback:
+        locationManager.removeUpdates(this);
+
+        //open the map:
+        latitude = String.valueOf(location.getLatitude());
+        longitude = String.valueOf(location.getLongitude());
+
+       // SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(getResources().getString(R.string.latitude), latitude);
+        editor.putString(getResources().getString(R.string.longitude), longitude);
+        editor.apply();
+
     }
 
 

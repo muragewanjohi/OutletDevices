@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Outlet Devices</string>
+    <string name="app_preferences">Asset Shared Preferences</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="select_outlet_name">Select Outlet Name</string>
@@ -21,7 +22,7 @@
     <string name="reset">Reset</string>
 
     <string name="image_href">ImageRef</string>
-    <string name="condition">Condition</string>
+    <string name="condition">Condition :</string>
     <string name="barcode">Barcode</string>
     <string name="Other">Other</string>
     <string name="outlet_id">outlet_id</string>
@@ -38,6 +39,11 @@
     <string name="qrCode">qrCode</string>
     <string name="stateId">stateId</string>
     <string name="asset_ids">asset_ids</string>
+    <string name="latitude">latitude</string>
+    <string name="longitude">longitude</string>
+    <string name="asset">Asset :</string>
+    <string name="synced">Synced :</string>
+    <string name="date">Date :</string>
 
 
     <string-array name="outlet_array">

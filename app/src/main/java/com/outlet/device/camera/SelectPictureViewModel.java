@@ -1,20 +1,27 @@
-package com.outlet.device.network;
+package com.outlet.device.camera;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.work.Worker;
-import androidx.work.WorkerParameters;
+import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
 
-import com.outlet.device.data.AppDatabase;
-import com.outlet.device.data.upload.UploadDao;
+import com.outlet.device.R;
 import com.outlet.device.data.upload.UploadRepository;
+import com.outlet.device.models.Asset;
 import com.outlet.device.models.Upload;
 import com.outlet.device.models.UploadResponse;
+import com.outlet.device.network.APIClient;
+import com.outlet.device.network.APIInterface;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import okhttp3.MediaType;
@@ -23,35 +30,53 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class UploadWorker extends Worker {
+public class SelectPictureViewModel extends AndroidViewModel {
 
-    private UploadRepository uploadRepository;
-    private List<Upload> uploads;
-    UploadDao uploadDao;
+    private UploadRepository repository;
+    private LiveData<List<Upload>> uploads;
 
-    public UploadWorker(
-            @NonNull Context context,
-            @NonNull WorkerParameters params) {
-        super(context, params);
-        uploadDao =  AppDatabase.getDatabase(context).uploadDao();
-
-       // uploadRepository = new UploadRepository(get());
+    public SelectPictureViewModel(@NonNull Application application) {
+        super(application);
+        repository = new UploadRepository(application);
     }
 
-    @NonNull
-    @Override
-    public Result doWork() {
+    public void insertUpload() {
 
-        Log.d("Upload_worker", "Constructor " );
+        SharedPreferences sharedPref = getApplication().getSharedPreferences(getApplication().getString(R.string.app_preferences),Context.MODE_PRIVATE);
 
-        uploads = uploadDao.getItemsToSync();
+        String userId = "1";
+        String outletId = sharedPref.getString(getApplication().getResources().getString(R.string.outlet_id), "8");
+        String assetId = sharedPref.getString(getApplication().getResources().getString(R.string.asset_id), "1");
+        String remark = sharedPref.getString(getApplication().getResources().getString(R.string.other_remarks), "0");
+        String barCode = sharedPref.getString(getApplication().getResources().getString(R.string.barCode), "041532");
+        String qrCode = sharedPref.getString(getApplication().getResources().getString(R.string.qrCode), "041532");
+        String image = sharedPref.getString(getApplication().getResources().getString(R.string.Image), null);
+        String stateId = sharedPref.getString(getApplication().getResources().getString(R.string.stateId), null);
+        String latitude = sharedPref.getString(getApplication().getResources().getString(R.string.latitude), null);
+        String longitude = sharedPref.getString(getApplication().getResources().getString(R.string.longitude), null);
 
-        for (Upload upload: uploads){
-            Log.d("Upload_toUpload", "onRequest: " + upload.getDatetime());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String datetime = dateFormat.format(new Date());
+
+        Upload upload = new Upload();
+        upload.setUserId(userId);
+        upload.setAssetId(assetId);
+        upload.setBarCode(barCode);
+        upload.setQrCode(qrCode);
+        upload.setStateId(stateId);
+        upload.setDatetime(datetime);
+        upload.setImage(image);
+        upload.setOutletId(outletId);
+        upload.setLatitude(latitude);
+        upload.setLongitude(longitude);
+        upload.setRemark(remark);
+
+        repository.insert(upload);
+
+        if(isNetworkAvailable()){
             uploadToServer(upload);
         }
 
-        return Result.success();
     }
 
     void uploadToServer(Upload upload){
@@ -103,7 +128,7 @@ public class UploadWorker extends Worker {
 
         // RequestBody requestBody = builder.build();
 
-        APIInterface  apiInterface = APIClient.getClient().create(APIInterface.class);
+        APIInterface apiInterface = APIClient.getClient().create(APIInterface.class);
         //  Call<UploadResponse> call = apiInterface.uploadAssets(requestBody);
         Call<UploadResponse> call = apiInterface.uploadAssets(fileBody, userId,outletId,assetId,latitude,longitude,datetime,qrCode,stateId,remark,barCode);
         call.enqueue(new Callback<UploadResponse>() {
@@ -111,7 +136,7 @@ public class UploadWorker extends Worker {
             public void onResponse(Call<UploadResponse> call, Response<UploadResponse> response) {
 
                // toUpload.setSynced(true);
-                uploadRepository.update(toUpload);
+                repository.update(toUpload);
 
                 Log.d("UploadResponse", "onResponse: response code: retrofit: " + response.code());
             }
@@ -122,5 +147,12 @@ public class UploadWorker extends Worker {
             }
         });
 
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getApplication().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager != null ? connectivityManager.getActiveNetworkInfo() : null;
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }
